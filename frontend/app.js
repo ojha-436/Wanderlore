@@ -139,7 +139,7 @@ function section(num, title, tag, innerHtml) {
 function renderDiscover(d) {
   const grid = (arr, kind) => `<div class="card-grid">${arr.map((it, i) => placeCard(it, kind, i)).join("")}</div>`;
   let html = "";
-  html += `<section class="result-section"><div class="rs-head"><span class="rs-num">◦</span><h2>${esc(d.destination)}</h2><span class="rs-tag">overview</span></div><p class="summary-lead">${esc(d.summary)}</p></section>`;
+  html += `<section class="result-section"><div class="rs-head"><span class="rs-num">◦</span><h2>${esc(d.destination)}</h2><span class="rs-tag">overview</span><button class="btn btn-ghost" id="save-explore-btn" style="margin-left:auto; border-color:var(--rust); color:var(--rust)">Save Exploration</button></div><p class="summary-lead">${esc(d.summary)}</p></section>`;
   
   if (d.weather_advisory && !d.weather_advisory.error) {
     const w = d.weather_advisory;
@@ -166,6 +166,8 @@ function renderDiscover(d) {
   // wire dynamic buttons
   $("results").querySelectorAll(".star-btn").forEach((b) => b.addEventListener("click", onStar));
   $("results").querySelectorAll(".story-btn").forEach((b) => b.addEventListener("click", () => tellStory(b.dataset.place)));
+  const saveExpBtn = $("save-explore-btn");
+  if (saveExpBtn) saveExpBtn.addEventListener("click", saveTrip);
 }
 
 // ---------------------------------------------------------------- trip / star
@@ -236,6 +238,55 @@ function openDrawer(html) {
 }
 function closeDrawer() { $("drawer").classList.remove("open"); $("overlay").classList.remove("open"); }
 
+async function viewProfile() {
+  openDrawer('<div class="loading"><span class="spinner"></span> Loading profile…</div>');
+  try {
+    const [pRes, tRes] = await Promise.all([
+      authFetch("/api/me"),
+      authFetch("/api/trips")
+    ]);
+    if (!pRes.ok) throw new Error("Couldn't load profile");
+    const p = await pRes.json();
+    const tripsData = tRes.ok ? await tRes.json() : { trips: [] };
+    
+    let html = `
+      <div class="st-kicker">Traveler Profile</div>
+      <h2>${esc(p.display_name || "Explorer")}</h2>
+      <p style="color:var(--ink-faint)">${esc(p.email || "")}</p>
+      
+      <div class="st-note" style="margin-top:20px">
+        <div class="lbl">Preferences</div>
+        <p style="margin-top:6px"><b>Pace:</b> ${esc(p.travel_style || "Balanced")}</p>
+        <p style="margin-top:6px"><b>Interests:</b> ${esc((p.interests || []).join(", ") || "None specified")}</p>
+      </div>
+      
+      <h3 style="margin-top:30px; border-bottom:1px solid #ddd; padding-bottom:8px">Saved Explorations</h3>
+    `;
+    
+    if (!tripsData.trips || !tripsData.trips.length) {
+      html += `<p style="margin-top:16px; color:var(--ink-faint)">No saved explorations yet.</p>`;
+    } else {
+      html += `<div style="display:flex; flex-direction:column; gap:12px; margin-top:16px">`;
+      for (const t of tripsData.trips) {
+        let dateStr = "";
+        if (t.createdAt) {
+          dateStr = new Date(t.createdAt).toLocaleDateString();
+        }
+        html += `
+          <div class="event-card" style="padding:12px">
+            <h4 style="margin:0; font-size:1.1rem; color:var(--rust)">${esc(t.label || t.destination)}</h4>
+            <div style="font-size:0.85rem; color:var(--ink-faint); margin-top:4px">${dateStr}</div>
+          </div>
+        `;
+      }
+      html += `</div>`;
+    }
+    openDrawer(html);
+  } catch (e) {
+    openDrawer(`<p>${esc(e.message)}</p>`);
+  }
+}
+
 async function tellStory(place) {
   openDrawer(`<div class="loading"><span class="spinner"></span> Unfolding the story of ${esc(place)}…</div>`);
   try {
@@ -284,6 +335,8 @@ function wire() {
   $("drawer-close").addEventListener("click", closeDrawer);
   $("overlay").addEventListener("click", closeDrawer);
   $("photo-input").addEventListener("change", (e) => { if (e.target.files[0]) photoStory(e.target.files[0]); });
+  const pc = $("profile-chip");
+  if (pc) pc.addEventListener("click", viewProfile);
 }
 
 main().catch((e) => {

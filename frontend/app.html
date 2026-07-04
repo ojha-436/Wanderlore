@@ -21,10 +21,10 @@
       </svg>
       <span class="word">Wanderlore</span>
     </a>
-    <div class="profile-chip">
+    <div class="profile-chip" id="profile-chip" style="cursor:pointer" title="View Profile & Saved Explorations">
       <div class="meta"><div class="nm" id="p-name">…</div><div class="em" id="p-email"></div></div>
       <div class="avatar" id="p-avatar">?</div>
-      <button class="logout" id="logout-btn" type="button">Log out</button>
+      <button class="logout" id="logout-btn" type="button" onclick="event.stopPropagation()">Log out</button>
     </div>
   </div>
 
