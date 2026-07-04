@@ -117,9 +117,12 @@ function placeCard(item, kind, idx) {
   meta.push(`~${Math.round(dur / 60 * 10) / 10}h`);
   if (item.etiquette_tip) meta.push("etiquette ✓");
   const on = selected.has(id) ? "on" : "";
+  const img = item.photo_url ? `<div style="height:140px; background:url('${esc(item.photo_url)}') center/cover; border-radius:12px 12px 0 0; margin: -20px -20px 16px -20px;"></div>` : "";
+  const ratingStr = item.rating ? `<span style="float:right; color:var(--rust)">★ ${item.rating}</span>` : "";
   return `<div class="place-card">
+    ${img}
     <button class="star-btn ${on}" data-id="${id}" data-name="${esc(item.name)}" data-cat="${esc(cat)}" data-dur="${dur}" title="Add to trip">★</button>
-    <span class="pc-cat">${esc(cat)}</span>
+    <span class="pc-cat">${esc(cat)}${ratingStr}</span>
     <h3>${esc(item.name)}</h3>
     <p class="pc-why">${esc(why)}</p>
     <div class="pc-meta">${meta.map((m) => `<span>${m}</span>`).join("")}</div>
@@ -137,6 +140,12 @@ function renderDiscover(d) {
   const grid = (arr, kind) => `<div class="card-grid">${arr.map((it, i) => placeCard(it, kind, i)).join("")}</div>`;
   let html = "";
   html += `<section class="result-section"><div class="rs-head"><span class="rs-num">◦</span><h2>${esc(d.destination)}</h2><span class="rs-tag">overview</span></div><p class="summary-lead">${esc(d.summary)}</p></section>`;
+  
+  if (d.weather_advisory && !d.weather_advisory.error) {
+    const w = d.weather_advisory;
+    html += section("⛅", "Traveler Advisory", "weather", `<div class="event-card"><h3 style="margin-top:0">Forecast</h3><p style="margin-bottom:0">${esc(w.summary)}</p></div>`);
+  }
+  
   html += section("01", "Attractions for you", "recommend", grid(d.attractions || [], "attraction"));
   html += section("02", "Hidden gems", "discover", grid(d.hidden_gems || [], "gem"));
   html += section("06", "Authentic experiences", "connect", grid(d.experiences || [], "experience"));
@@ -230,9 +239,10 @@ function closeDrawer() { $("drawer").classList.remove("open"); $("overlay").clas
 async function tellStory(place) {
   openDrawer(`<div class="loading"><span class="spinner"></span> Unfolding the story of ${esc(place)}…</div>`);
   try {
+    const tone = $("photo-tone") ? $("photo-tone").value : "historical";
     const res = await authFetch("/api/story", {
       method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ place, destination_context: lastDiscover ? lastDiscover.destination : null }),
+      body: JSON.stringify({ place, destination_context: lastDiscover ? lastDiscover.destination : null, tone }),
     });
     if (!res.ok) throw new Error("Story failed");
     const s = await res.json();
@@ -248,7 +258,8 @@ async function tellStory(place) {
 async function photoStory(file) {
   openDrawer('<div class="loading"><span class="spinner"></span> Reading the landmark…</div>');
   try {
-    const form = new FormData(); form.append("image", file);
+    const tone = $("photo-tone") ? $("photo-tone").value : "historical";
+    const form = new FormData(); form.append("image", file); form.append("tone", tone);
     const res = await authFetch("/api/story/photo", { method: "POST", body: form });
     if (!res.ok) throw new Error((await res.json().catch(() => ({}))).detail || "Couldn't read the photo");
     const s = await res.json();

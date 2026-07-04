@@ -111,9 +111,23 @@ def discover_events(client, req: DiscoverRequest) -> EventsResult:
     return EventsResult(events=events, citations=citations)
 
 
+import asyncio
+from .weather import get_weather_advisory
+from .places import enrich_items
+
 def discover(client, req: DiscoverRequest) -> DiscoverResponse:
     core = discover_core(client, req)
     events_result = discover_events(client, req)
+    
+    async def fetch_extras():
+        weather_task = get_weather_advisory(req.destination)
+        enrich_attr_task = enrich_items(core.attractions, req.destination)
+        enrich_gems_task = enrich_items(core.hidden_gems, req.destination)
+        weather, _, _ = await asyncio.gather(weather_task, enrich_attr_task, enrich_gems_task)
+        return weather
+
+    weather_advisory = asyncio.run(fetch_extras())
+
     notes = "" if events_result.events else "No dated events found — showing evergreen culture."
     return DiscoverResponse(
         destination=req.destination,
@@ -123,5 +137,6 @@ def discover(client, req: DiscoverRequest) -> DiscoverResponse:
         experiences=core.experiences,
         events=events_result.events,
         event_citations=events_result.citations,
+        weather_advisory=weather_advisory,
         notes=notes,
     )

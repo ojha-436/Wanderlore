@@ -23,6 +23,8 @@ class Attraction(BaseModel):
     area: str = Field(description="Neighborhood / district for grouping.")
     best_time: str = Field(description="Best time of day / conditions to visit.")
     suggested_duration_minutes: int = Field(description="Typical visit length in minutes.")
+    photo_url: Optional[str] = None
+    rating: Optional[float] = None
 
 
 class HiddenGem(BaseModel):
@@ -30,6 +32,8 @@ class HiddenGem(BaseModel):
     why_special: str = Field(description="What makes this off-the-beaten-path spot special.")
     area: str
     suggested_duration_minutes: int
+    photo_url: Optional[str] = None
+    rating: Optional[float] = None
 
 
 class CulturalExperience(BaseModel):
@@ -106,6 +110,7 @@ class DiscoverRequest(BaseModel):
 class StoryRequest(BaseModel):
     place: str = Field(min_length=2, max_length=160)
     destination_context: Optional[str] = Field(default=None, max_length=120)
+    tone: Literal["historical", "myth", "humorous"] = "historical"
 
 
 class ItineraryItemInput(BaseModel):
@@ -147,6 +152,7 @@ class DiscoverResponse(BaseModel):
     experiences: List[CulturalExperience]
     events: List[LocalEvent]
     event_citations: List[Citation]
+    weather_advisory: Optional[dict] = None
     notes: str = ""
 
 

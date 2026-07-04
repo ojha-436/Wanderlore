@@ -50,13 +50,14 @@ def story_route(
     user: User = Depends(get_current_user),
     client: GeminiClient = Depends(get_gemini_client),
 ) -> HeritageStory:
-    return tell_story(client, req.place, req.destination_context)
+    return tell_story(client, req.place, req.destination_context, req.tone)
 
 
 @router.post("/story/photo", response_model=LandmarkStory)
 async def story_photo_route(
     image: UploadFile = File(...),
     caption: Optional[str] = Form(default=None),
+    tone: str = Form(default="historical"),
     user: User = Depends(get_current_user),
     client: GeminiClient = Depends(get_gemini_client),
     settings: Settings = Depends(get_settings),
@@ -72,7 +73,7 @@ async def story_photo_route(
             status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
             detail="Image exceeds the size limit.",
         )
-    return story_from_photo(client, data, image.content_type, caption)
+    return story_from_photo(client, data, image.content_type, caption, tone)
 
 
 @router.post("/itinerary", response_model=Itinerary)

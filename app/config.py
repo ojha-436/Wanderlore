@@ -27,6 +27,7 @@ class Settings(BaseSettings):
     google_cloud_project: str = ""
     google_cloud_location: str = "us-central1"
     gemini_api_key: str = ""  # injected from Secret Manager in prod; never committed
+    google_maps_api_key: str = ""
 
     # ---- Firebase (web config is public / non-secret) ----
     firebase_project_id: str = ""
