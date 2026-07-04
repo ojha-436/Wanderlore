@@ -1,0 +1,10 @@
+# Runtime dependencies (installed into the Cloud Run container)
+fastapi>=0.115,<1.0
+uvicorn[standard]>=0.30
+pydantic>=2.7
+pydantic-settings>=2.3
+python-multipart>=0.0.9
+
+# Google Cloud / AI
+google-genai>=1.0.0
+firebase-admin>=6.5.0

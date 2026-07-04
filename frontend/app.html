@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wanderlore — your journey</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400..700;1,9..144,400..600&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/styles.css" />
+  <link rel="stylesheet" href="/app.css" />
+</head>
+<body>
+  <!-- APP BAR -->
+  <div class="appbar">
+    <a href="/" class="brand">
+      <svg class="compass" viewBox="0 0 48 48" fill="none" style="width:26px;height:26px;color:var(--rust)">
+        <circle cx="24" cy="24" r="21" stroke="currentColor" stroke-width="2"/>
+        <polygon points="24,9 28,24 24,39 20,24" fill="currentColor"/>
+        <polygon points="9,24 24,20 39,24 24,28" fill="currentColor" opacity="0.45"/>
+      </svg>
+      <span class="word">Wanderlore</span>
+    </a>
+    <div class="profile-chip">
+      <div class="meta"><div class="nm" id="p-name">…</div><div class="em" id="p-email"></div></div>
+      <div class="avatar" id="p-avatar">?</div>
+      <button class="logout" id="logout-btn" type="button">Log out</button>
+    </div>
+  </div>
+
+  <main class="app-main">
+    <!-- DISCOVER -->
+    <section class="discover-panel">
+      <h1>Where are you headed?</h1>
+      <p class="sub">Tell Wanderlore your trip — it'll uncover attractions, hidden gems, culture, and what's on.</p>
+      <div class="grid-3">
+        <div class="fld"><label for="dest">Destination</label><input id="dest" placeholder="Jaipur, India" /></div>
+        <div class="fld"><label for="dates">Travel dates</label><input id="dates" type="date" /></div>
+        <div class="fld"><label for="days">Days</label><input id="days" type="number" min="1" max="30" value="3" /></div>
+      </div>
+      <div class="grid-2">
+        <div class="fld"><label for="interests">Interests (comma separated)</label><input id="interests" placeholder="history, street food, architecture, crafts" /></div>
+        <div class="fld"><label for="pace">Pace</label>
+          <select id="pace"><option value="relaxed">Relaxed</option><option value="balanced" selected>Balanced</option><option value="packed">Packed</option></select>
+        </div>
+      </div>
+      <div class="discover-actions">
+        <button class="btn btn-primary" id="discover-btn" type="button">Discover <span class="arrow">→</span></button>
+        <span class="tray-lbl" id="discover-hint">Powered by Gemini · events grounded with Google Search</span>
+      </div>
+      <div id="discover-error" class="auth-error"></div>
+    </section>
+
+    <div id="results"></div>
+
+    <!-- SNAP A LANDMARK (multimodal) -->
+    <section class="result-section" id="snap-section">
+      <div class="snap">
+        <div>
+          <h3>Standing before something beautiful?</h3>
+          <p>Snap a photo of any landmark and Wanderlore will identify it and tell you its story.</p>
+        </div>
+        <label class="upload">Upload a photo
+          <input id="photo-input" type="file" accept="image/png,image/jpeg,image/webp" hidden />
+        </label>
+      </div>
+    </section>
+  </main>
+
+  <!-- STORY DRAWER -->
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer">
+    <button class="close" id="drawer-close">×</button>
+    <div class="drawer-inner" id="drawer-content"></div>
+  </aside>
+
+  <!-- TRIP TRAY -->
+  <div class="tray" id="tray">
+    <div class="tray-inner">
+      <div class="tray-count"><b id="tray-n">0</b> places starred for your trip</div>
+      <div class="tray-controls">
+        <span class="tray-lbl">Hours/day</span>
+        <input type="number" id="daily-hours" min="1" max="16" value="8" />
+        <button class="btn btn-ghost" id="build-btn" type="button" style="border-color:var(--paper);color:var(--paper)">Build itinerary</button>
+        <button class="btn btn-primary" id="save-btn" type="button">Save trip</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
