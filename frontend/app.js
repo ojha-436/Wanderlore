@@ -68,7 +68,24 @@ async function loadProfile() {
     const initial = (p.display_name || p.email || "E").trim().charAt(0).toUpperCase();
     if (p.photo_url) $("p-avatar").outerHTML = `<img class="avatar" id="p-avatar" src="${esc(p.photo_url)}" alt="">`;
     else $("p-avatar").textContent = initial;
-    if (Array.isArray(p.interests) && p.interests.length) $("interests").value = p.interests.join(", ");
+    if (Array.isArray(p.interests) && p.interests.length) {
+      const cbMap = {};
+      $("interests-dropdown").querySelectorAll('input[type="checkbox"]').forEach(cb => {
+        if (cb.value) cbMap[cb.value.toLowerCase()] = cb;
+      });
+      const custom = [];
+      p.interests.forEach(i => {
+        const v = i.toLowerCase();
+        if (cbMap[v]) cbMap[v].checked = true;
+        else custom.push(i);
+      });
+      if (custom.length) {
+        $("interest-other-cb").checked = true;
+        $("interest-other-wrap").style.display = "block";
+        $("interest-other-text").value = custom.join(", ");
+      }
+      if ($("interest-other-cb")) $("interest-other-cb").dispatchEvent(new Event("change"));
+    }
   } catch {
     $("p-name").textContent = currentUser.displayName || "Explorer";
     $("p-email").textContent = currentUser.email || "";
@@ -85,7 +102,15 @@ async function discover() {
     destination: $("dest").value.trim(),
     travel_dates: $("dates").value.trim() || null,
     num_days: parseInt($("days").value || "3", 10),
-    interests: splitCsv($("interests").value),
+    interests: (() => {
+      const cbs = Array.from($("interests-dropdown").querySelectorAll('input[type="checkbox"]:checked'))
+        .filter(c => c.id !== "interest-other-cb" && c.value)
+        .map(c => c.value);
+      if ($("interest-other-cb").checked && $("interest-other-text").value.trim()) {
+        cbs.push(...splitCsv($("interest-other-text").value));
+      }
+      return cbs;
+    })(),
     pace: $("pace").value,
   };
   if (!body.destination) { $("discover-error").textContent = "Where would you like to go?"; return; }
@@ -337,6 +362,49 @@ function wire() {
   $("photo-input").addEventListener("change", (e) => { if (e.target.files[0]) photoStory(e.target.files[0]); });
   const pc = $("profile-chip");
   if (pc) pc.addEventListener("click", viewProfile);
+
+  const intHdr = $("interests-header");
+  const intDrop = $("interests-dropdown");
+  const intDisp = $("interests-display");
+  const otherCb = $("interest-other-cb");
+  const otherWrap = $("interest-other-wrap");
+
+  if (intHdr) {
+    intHdr.addEventListener("click", (e) => {
+      e.stopPropagation();
+      intDrop.classList.toggle("show");
+    });
+    
+    document.addEventListener("click", (e) => {
+      if (!intDrop.contains(e.target) && !intHdr.contains(e.target)) {
+        intDrop.classList.remove("show");
+      }
+    });
+
+    intDrop.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.addEventListener("change", () => {
+        if (cb.id === "interest-other-cb") {
+          otherWrap.style.display = cb.checked ? "block" : "none";
+        }
+        
+        const checked = Array.from(intDrop.querySelectorAll('input[type="checkbox"]:checked'))
+          .filter(c => c.id !== "interest-other-cb")
+          .map(c => c.parentElement.textContent.trim());
+          
+        if (otherCb.checked) checked.push("Other");
+
+        if (checked.length === 0) {
+          intDisp.textContent = "Select interests...";
+          intDisp.style.color = "var(--ink-faint)";
+        } else {
+          intDisp.textContent = checked.join(", ");
+          intDisp.style.color = "var(--ink)";
+        }
+      });
+    });
+    
+    $("interest-other-text").addEventListener("click", e => e.stopPropagation());
+  }
 }
 
 main().catch((e) => {

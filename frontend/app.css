@@ -32,6 +32,29 @@
 .fld input, .fld select { width: 100%; padding: 11px 13px; font: inherit; color: var(--ink);
   background: var(--paper); border: 1.5px solid var(--line-ink); border-radius: 2px; }
 .fld input:focus, .fld select:focus { outline: none; border-color: var(--rust); background: #fff; }
+
+/* Custom Multi-Select */
+.cms-wrapper { position: relative; width: 100%; font-family: var(--display); }
+.cms-header { 
+  display: flex; align-items: center; justify-content: space-between;
+  width: 100%; padding: 11px 13px; font: inherit; color: var(--ink);
+  background: var(--paper); border: 1.5px solid var(--line-ink); border-radius: 2px;
+  cursor: pointer; user-select: none;
+}
+.cms-header:hover { border-color: var(--rust); background: #fff; }
+.cms-dropdown {
+  position: absolute; top: 100%; left: 0; right: 0;
+  background: #fff; border: 1.5px solid var(--line-ink); border-top: none;
+  border-radius: 0 0 4px 4px; z-index: 10; display: none;
+  max-height: 250px; overflow-y: auto; box-shadow: var(--shadow-sm);
+  padding: 8px 0;
+}
+.cms-dropdown.show { display: block; }
+.cms-dropdown label {
+  display: flex; align-items: center; gap: 8px; padding: 6px 12px;
+  font-weight: 500; font-size: 0.9rem; cursor: pointer; margin: 0; text-transform: none; letter-spacing: normal;
+}
+.cms-dropdown label:hover { background: var(--paper-2); }
 .discover-actions { margin-top: 22px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
 
 /* loading shimmer */
